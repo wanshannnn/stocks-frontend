@@ -4,18 +4,22 @@ definePageMeta({
   roles: [0, 1],
 });
 
-import AllStocks from "@/components/allStocks.vue";
-import HoldStocks from "@/components/holdStocks.vue";
+const allStocks = defineAsyncComponent(() =>
+    import('@/components/allStocks.vue')
+);
+const holdStocks = defineAsyncComponent(() =>
+    import('@/components/holdStocks.vue')
+);
 </script>
 
 <template>
   <div class="mystocks-container">
     <el-row>
       <el-col :xs="24" :sm="11" :md="11" class="stock-container">
-        <AllStocks/>
+        <allStocks/>
       </el-col>
       <el-col :xs="24" :sm="11" :md="11" class="stock-container">
-        <HoldStocks/>
+        <holdStocks/>
       </el-col>
     </el-row>
   </div>

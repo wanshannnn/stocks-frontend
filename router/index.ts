@@ -37,7 +37,7 @@ const constantRoute = [
   },
   {
     path: '/',
-    component: () => import('~/pages/layout/index.vue'),
+    component: () => import('~/layouts/default.vue'),
     name: 'layout',
     meta: {
       title: '',

@@ -3,7 +3,7 @@ import { index } from '~/store';
 import { ElMessage, ElMessageBox } from "element-plus";
 import {computed, onBeforeUnmount, onMounted, reactive, ref} from "vue";
 import { useRoute } from "vue-router";
-import { fixPwdAPI } from '@/api/user';
+import { fixPwdAPI } from '~/api/user.ts';
 
 const isCollapse = ref(false); // 菜单栏默认展开
 const dialogFormVisible = ref(false);
@@ -194,7 +194,7 @@ const quitFn = () => {
           <!-- Github -->
           <a href="https://github.com/wanshannnn" style="float: right">
             <img
-                src="@/assets/icons/github.svg"
+                src="../assets/icons/github.svg"
                 alt="Github"
                 style="width: 36px; height: 36px; transform: translate(0px, 12px);"
                 class="github-icon"

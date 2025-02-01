@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { index } from '~/store';
-import History from "@/components/history.vue";
-import Latest from "@/components/latest.vue";
 import { computed, onMounted, reactive } from "vue";
-import {getIndexesAPI} from "@/api/indexes.ts";
+import { getIndexesAPI } from "@/api/indexes.ts";
+
+const History = defineAsyncComponent(() =>
+    import('@/components/history.vue')
+);
+const Latest = defineAsyncComponent(() =>
+    import('@/components/latest.vue')
+);
 
 const loginUserStore = index();
 const username = computed(() => loginUserStore.loginUser?.username ?? '未登录用户');

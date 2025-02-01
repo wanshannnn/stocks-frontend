@@ -5,10 +5,16 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
   vite: {
+    vue: {
+      customElement: true
+    },
+    vueJsx: {
+      mergeProps: true
+    },
     css: {
       preprocessorOptions: {
         scss: {
-          additionalData: `@import "@/assets/bass.css";`
+          additionalData: `@import "@/assets/base.css";`
         },
       },
     },
