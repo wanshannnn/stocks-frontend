@@ -77,7 +77,7 @@ const activities = ref([
   </el-row>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .profile-container {
   margin: 20px;
   display: flex;

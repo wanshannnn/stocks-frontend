@@ -25,7 +25,7 @@ const holdStocks = defineAsyncComponent(() =>
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .stock-container {
   border: 1px solid var(--color-border);
   border-radius: 6px;

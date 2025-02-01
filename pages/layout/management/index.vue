@@ -271,7 +271,7 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .user-manage-container {
   border: 1px solid var(--color-border);
   border-radius: 6px;

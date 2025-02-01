@@ -87,7 +87,7 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .welcome {
   margin-left: 20px;
   margin-bottom: -10px;
