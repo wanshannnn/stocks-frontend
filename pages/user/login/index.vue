@@ -3,8 +3,11 @@ import { User, Lock } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { ref, reactive } from 'vue';
 import { index } from '~/store';
-import router from "@/router";
-import { loginAPI } from '@/api/user.ts';
+import { loginAPI } from '~/api/user.ts';
+
+definePageMeta({
+  layout: false,
+});
 
 let loginForm = reactive({
   username: "",
@@ -32,9 +35,7 @@ const login = async () => {
     if (res.code === 0 && res.data) {
       ElMessage.success("登陆成功");
       await loginUserStore.fetchLoginUser();
-      router.push({ path: '/' }).then(() => {
-        location.reload();
-      });
+      navigateTo({ path: '/' });
     }
   } else {
     ElMessage.error("登陆失败")
@@ -60,8 +61,8 @@ const login = async () => {
           </el-form-item>
           <el-form-item class="login_and_register">
             <el-button class="login_btn" type="primary" @click="login">登陆</el-button>
-            <el-button type="info" @click="$router.push('/user/register')">注册</el-button>
-            <el-link class="router" type="info" @click="$router.push('/dashboard')">跳过登陆</el-link>
+            <el-button type="info" @click="navigateTo('/user/register')">注册</el-button>
+            <el-link class="router" type="info" @click="navigateTo('/layout/dashboard')">跳过登陆</el-link>
           </el-form-item>
         </el-form>
       </el-col>
@@ -83,7 +84,7 @@ body {
   align-items: center;
   top: 10vh;
   height: 100vh;
-  background: url('@/assets/images/login_background_pc.png') no-repeat;
+  background: url('assets/images/login_background_pc.png') no-repeat;
   background-size: cover;  /* 背景图保持比例并填充整个屏幕 */
   background-position: center center;  /* 背景图居中 */
 
@@ -140,7 +141,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;  /* 确保容器填充整个屏幕 */
-    background: url('@/assets/images/login_background_mobile.png') no-repeat;
+    background: url('assets/images/login_background_mobile.png') no-repeat;
     background-size: cover;  /* 背景图保持比例并填充整个屏幕 */
     background-position: center center; /* 背景图居中 */
 

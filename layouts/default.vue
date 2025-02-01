@@ -2,7 +2,6 @@
 import { index } from '~/store';
 import { ElMessage, ElMessageBox } from "element-plus";
 import {computed, onBeforeUnmount, onMounted, reactive, ref} from "vue";
-import { useRoute } from "vue-router";
 import { fixPwdAPI } from '~/api/user.ts';
 
 const isCollapse = ref(false); // 菜单栏默认展开
@@ -186,8 +185,8 @@ const quitFn = () => {
                 <el-dropdown-item @click="quitFn">退出登陆</el-dropdown-item>
               </el-dropdown-menu>
               <el-dropdown-menu v-else>
-                <el-dropdown-item @click="$router.push('/user/login')">去登陆</el-dropdown-item>
-                <el-dropdown-item @click="$router.push('/user/register')">去注册</el-dropdown-item>
+                <el-dropdown-item @click="navigateTo('/user/login')">去登陆</el-dropdown-item>
+                <el-dropdown-item @click="navigateTo('/user/register')">去注册</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -203,8 +202,8 @@ const quitFn = () => {
         </el-header>
 
         <!-- 主体部分 -->
-        <el-main class="main-container">
-          <router-view></router-view>
+        <el-main class="main-container" >
+          <NuxtPage />
         </el-main>
       </el-container>
     </el-container>

@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/api/user.ts';
 import type { UserInfo } from '@/types/user.ts';
 
 export const index = defineStore('loginUser', () => {
-    const loginUser = ref<UserInfo | null>(null);
+    const loginUser = useCookie<UserInfo | null>('loginUser', { default: () => null });
 
     async function fetchLoginUser() {
         const res = await getCurrentUser();
@@ -24,8 +24,4 @@ export const index = defineStore('loginUser', () => {
     return {
         loginUser, fetchLoginUser, setLoginUser, clearLoginUser
     };
-}, {
-    persist: {
-        storage: localStorage,
-    },
 });

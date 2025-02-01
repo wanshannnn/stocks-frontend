@@ -1,5 +1,4 @@
 import axios from 'axios'
-import router from '@/router'
 import { ElMessage } from 'element-plus'
 import { index } from '~/store'
 
@@ -36,7 +35,7 @@ instance.interceptors.response.use(
         if (error.response.status === 401) {
             loginUserStore.clearLoginUser();
             ElMessage.error('用户身份已过期');
-            router.push('/');
+            navigateTo('/');
         }
         return Promise.reject(error);
     }
