@@ -1,5 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
+  middleware: 'auth',
   requiresAuth: true,
   roles: [1],
 });
@@ -8,13 +9,42 @@ import {ref, reactive, onMounted, onBeforeUnmount} from 'vue';
 import {ElForm, ElMessage, ElMessageBox, type FormInstance} from 'element-plus';
 import {getUserPageListAPI, addUserAPI, deleteUserAPI, updateUserAPI} from '@/api/user';
 import type { UserInfo } from "@/types/user";
-import type { AxiosResponse } from "axios";
+import type {AxiosResponse} from "axios";
 
-const currentPage = ref(1);
-const pageSize = ref(20);
-const userList = ref<{ data: UserInfo[]; total: number } | null>(null);
+const route = useRoute();
+const currentPage = useState('currentPage', () => Number(route.query.page) || 1);
+const pageSize = useState('pageSize', () => Number(route.query.size) || 20);
+
+
+const { data: userList } = await useAsyncData('users', async () => {
+  if (!import.meta.server) return; // 仅在服务端运行
+  const res = await getUserPageListAPI({ page: currentPage.value, size: pageSize.value });
+  return res.data.data;
+});
+
+onMounted(() => {
+  fetchUsersByPage(currentPage.value, pageSize.value);
+});
+
+// 监听屏幕大小变化（并注意防止hydration中出现mismatch）
+const paginationLayout = useState('paginationLayout', () => 'total, prev, pager, next, jumper');
+
+const updatePaginationLayout = () => {
+  if (import.meta.client) {
+    paginationLayout.value = window.innerWidth <= 768 ? 'prev, pager, next' : 'total, prev, pager, next, jumper';
+  }
+};
+
+onMounted(() => {
+  updatePaginationLayout();
+  window.addEventListener('resize', updatePaginationLayout);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updatePaginationLayout);
+});
+
 const loading = ref(false);
-const paginationLayout = ref('total, prev, pager, next, jumper');
 const addUserDialogVisible = ref(false);
 const updateUserDialogVisible = ref(false);
 const userForm = ref<FormInstance | null>(null);
@@ -79,7 +109,7 @@ const addUser = async () => {
         ElMessage.success('用户添加成功');
         addUserDialogVisible.value = false;
         resetForm();
-        fetchUsersByPage(currentPage.value, pageSize.value);
+        await fetchUsersByPage(currentPage.value, pageSize.value);
       } else {
         ElMessage.error(response.data.message || '添加用户失败');
       }
@@ -102,7 +132,7 @@ const updateUser = async () => {
       if (response.data.code === 0) {
         ElMessage.success('update success');
         updateUserDialogVisible.value = false;
-        fetchUsersByPage(currentPage.value, pageSize.value);
+        await fetchUsersByPage(currentPage.value, pageSize.value);
       } else {
         ElMessage.error(response.data.message || 'update failed');
       }
@@ -123,7 +153,7 @@ const handleDeleteUser = async (id: number) => {
     const res = await deleteUserAPI(id);
     if (res?.data.code === 0) {
       ElMessage.success('delete success');
-      fetchUsersByPage(currentPage.value, pageSize.value);
+      await fetchUsersByPage(currentPage.value, pageSize.value);
     } else {
       ElMessage.error((res as AxiosResponse<{ message: string }>).data.message || 'delete failed');
     }
@@ -171,23 +201,6 @@ onMounted(() => {
   fetchUsersByPage(currentPage.value, pageSize.value);
 });
 
-// 监听屏幕大小变化
-const updatePaginationLayout = () => {
-  if (window.innerWidth <= 768) {
-    paginationLayout.value = 'prev, pager, next'; // 小屏幕只显示上一页、页码和下一页
-  } else {
-    paginationLayout.value = 'total, prev, pager, next, jumper'; // 大屏幕显示完整分页
-  }
-};
-
-onMounted(() => {
-  updatePaginationLayout();
-  window.addEventListener('resize', updatePaginationLayout);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', updatePaginationLayout);
-});
 </script>
 
 
@@ -196,28 +209,30 @@ onBeforeUnmount(() => {
     <!-- 添加用户 -->
     <el-button type="primary" @click="addUserDialogVisible = true">Add User</el-button>
     <!-- 添加用户对话框 -->
-    <el-dialog v-model="addUserDialogVisible" title="Add User" width="500">
-      <el-form :model="form" :rules="rules" ref="userForm" label-width="100px">
-        <el-form-item prop="username" label="Username" :label-width="80">
-          <el-input v-model="form.username" autocomplete="off" />
-        </el-form-item>
-        <el-form-item prop="account" label="Account" :label-width="80">
-          <el-input v-model="form.account" autocomplete="off" />
-        </el-form-item>
-        <el-form-item prop="status" label="Status" :label-width="80">
-          <el-select v-model="form.status" placeholder="Please select status">
-            <el-option label="Activate" :value="true"></el-option>
-            <el-option label="Inactivate" :value="false"></el-option>
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="cancelForm" class="cancel-button">Cancel</el-button>
-          <el-button type="primary" @click="addUser">Confirm</el-button>
-        </div>
-      </template>
-    </el-dialog>
+    <ClientOnly>
+      <el-dialog v-model="addUserDialogVisible" title="Add User" width="500">
+        <el-form :model="form" :rules="rules" ref="userForm" label-width="100px">
+          <el-form-item prop="username" label="Username" :label-width="80">
+            <el-input v-model="form.username" autocomplete="off" />
+          </el-form-item>
+          <el-form-item prop="account" label="Account" :label-width="80">
+            <el-input v-model="form.account" autocomplete="off" />
+          </el-form-item>
+          <el-form-item prop="status" label="Status" :label-width="80">
+            <el-select v-model="form.status" placeholder="Please select status">
+              <el-option label="Activate" :value="true"></el-option>
+              <el-option label="Inactivate" :value="false"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <div class="dialog-footer">
+            <el-button @click="cancelForm" class="cancel-button">Cancel</el-button>
+            <el-button type="primary" @click="addUser">Confirm</el-button>
+          </div>
+        </template>
+      </el-dialog>
+    </ClientOnly>
 
     <!-- 分页展示用户信息 -->
     <el-table class="user-table" :data="userList?.data || []" style="width: 100%; table-layout: fixed;">
@@ -261,7 +276,7 @@ onBeforeUnmount(() => {
 
     <!-- 分页组件 -->
     <el-pagination
-      v-if="userList && userList.total > 0"
+      v-show="userList && userList.total > 0"
       v-model:current-page="currentPage"
       v-model:page-size="pageSize"
       :total="userList?.total"

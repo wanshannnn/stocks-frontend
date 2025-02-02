@@ -1,5 +1,5 @@
-import request from '@/utils/request';
 import type { GetAnalysisListAPIResponse } from "@/types/analysis.ts";
+import request from "@/utils/request.ts";
 
 /**
  * 获取股票分析数据

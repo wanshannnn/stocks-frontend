@@ -7,9 +7,6 @@ export default defineNuxtConfig({
   pages: true,
   css: ['@/assets/base.scss'],
   vite: {
-    vue: {
-      customElement: true
-    },
     vueJsx: {
       mergeProps: true
     },

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
+  middleware: 'auth',
   requiresAuth: true,
   roles: [0, 1],
 });
@@ -16,10 +17,14 @@ const holdStocks = defineAsyncComponent(() =>
   <div class="mystocks-container">
     <el-row>
       <el-col :xs="24" :sm="11" :md="11" class="stock-container">
-        <allStocks/>
+        <ClientOnly>
+          <allStocks/>
+        </ClientOnly>
       </el-col>
       <el-col :xs="24" :sm="11" :md="11" class="stock-container">
-        <holdStocks/>
+        <ClientOnly>
+          <holdStocks/>
+        </ClientOnly>
       </el-col>
     </el-row>
   </div>

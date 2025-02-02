@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { index } from '~/store';
-import { computed, onMounted, reactive } from "vue";
+import {  onMounted } from "vue";
 import { getIndexesAPI } from "@/api/indexes.ts";
 
 const History = defineAsyncComponent(() =>
@@ -11,23 +11,28 @@ const Latest = defineAsyncComponent(() =>
 );
 
 const loginUserStore = index();
-const username = computed(() => loginUserStore.loginUser?.username ?? '未登录用户');
-const today = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
-let indexes = reactive({
+
+const username = ref('未登录用户');
+onMounted(() => {
+  username.value = loginUserStore.loginUser?.username ?? '未登录用户';
+});
+
+const today = ref('');
+onMounted(() => {
+  today.value = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
+});
+
+const indexes = ref({
   SHCOMP: 0,
   SZCOMP: 0,
   ChiNext: 0,
   CSI300: 0
 });
-
 onMounted(async () => {
   try {
     const res = await getIndexesAPI();
     if (res.data.code === 0) {
-      indexes.SHCOMP = res.data.data.SHCOMP;
-      indexes.SZCOMP = res.data.data.SZCOMP;
-      indexes.ChiNext = res.data.data.ChiNext;
-      indexes.CSI300 = res.data.data.CSI300;
+      indexes.value = res.data.data;
     } else {
       console.error('获取指数数据失败');
     }
@@ -74,13 +79,17 @@ onMounted(async () => {
       <!-- 趋势图-->
       <el-col :xs="24" :sm="12" :md="10">
         <div class="history-graph-container">
-          <History/>
+          <ClientOnly>
+            <History/>
+          </ClientOnly>
         </div>
       </el-col>
       <!-- 最新数据 -->
       <el-col :xs="24" :sm="12" :md="14">
         <div class="latest-stock-container">
-          <Latest/>
+          <ClientOnly>
+            <Latest/>
+          </ClientOnly>
         </div>
       </el-col>
     </el-row>
