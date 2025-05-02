@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { registerAPI } from '~/api/user.ts';
+import { userRegister } from '~/api/user.ts';
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
+import { navigateTo } from "#app";
 
 definePageMeta({
   layout: false,
@@ -9,23 +10,30 @@ definePageMeta({
 
 const form = ref({
   username: '',
+  account: '',
   password: '',
   repassword: '',
 })
+
 const registerRef = ref();
 
 // 注册表单的校验规则
-const samePwd = (rules: any, value: any, callback: any) => {
+const samePwd = (rule: any, value: any, callback: any) => {
   if (value !== form.value.password) {
-    callback(new Error('两次输入的密码不一致!'))
+    callback(new Error('两次输入的密码不一致!'));
   } else {
     callback();
   }
 }
+
 const rules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
-    { pattern: /^[a-zA-Z0-9]{1,10}$/, message: '用户名必须是1-10位字符长度的大小写字母或数字', trigger: 'blur' }
+    { pattern: /^.{1,20}$/, message: '用户名不能超过20位字符长度', trigger: 'blur' }
+  ],
+  account: [
+    { required: true, message: '请输入账号', trigger: 'blur' },
+    { pattern: /^[a-zA-Z0-9]{1,20}$/, message: '账号必须是1-20位字符长度的大小写字母或数字', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
@@ -33,7 +41,6 @@ const rules = {
   ],
   repassword: [
     { required: true, message: '请再次输入密码', trigger: 'blur' },
-    { pattern: /^\S{6,15}$/, message: '密码必须是6-15位字符长度的非空字符', trigger: 'blur' },
     { validator: samePwd, trigger: 'blur' }
   ]
 }
@@ -43,20 +50,14 @@ const registerFn = async () => {
   if (valid) {
     console.log('注册的表单ref:  ', registerRef)
     console.log('form.value:  ', form.value)
-    // 调用注册接口，通过接口的return request，拿到promise对象
-    const { data: res } = await registerAPI(form.value)
+    const { data: res } = await userRegister(form.value)
     console.log(res);
-    // 注册失败，响应拦截器已经ElMessage提示用户，这里直接返回
     if (res.code !== 0) {
       console.log('注册失败！');
       return false;
     }
-    // 注册成功
     ElMessage.success('注册成功!');
-    navigateTo({
-      path: '/user/login',
-      replace: true,
-    });
+    await navigateTo('/user/login', { replace: true });
   } else {
     return false;
   }
@@ -125,6 +126,9 @@ const registerFn = async () => {
       <el-form :model="form" label-width="0px" :rules="rules" ref="registerRef">
         <el-form-item prop="username">
           <el-input placeholder="请输入用户名" v-model="form.username"></el-input>
+        </el-form-item>
+        <el-form-item prop="account">
+          <el-input placeholder="请输入账户" v-model="form.account"></el-input>
         </el-form-item>
         <el-form-item prop="password">
           <el-input type="password" placeholder="请输入密码" v-model="form.password"></el-input>
@@ -216,7 +220,7 @@ body {
 .register_container {
   z-index: 10;
   width: min(400px, 80%);
-  height: 340px;
+  height: 400px;
   position: absolute;
   left: 50%;
   top: 50%;

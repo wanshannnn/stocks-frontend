@@ -1,41 +1,157 @@
 <script setup lang="ts">
+import {ElMessage, ElMessageBox} from "element-plus";
+
 definePageMeta({
   middleware: 'auth',
   requiresAuth: true,
-  roles: [1],
+  roles: ['admin'],
 });
 
-import {ref, reactive, onMounted, onBeforeUnmount} from 'vue';
-import {ElForm, ElMessage, ElMessageBox, type FormInstance} from 'element-plus';
-import {getUserPageListAPI, addUserAPI, deleteUserAPI, updateUserAPI} from '@/api/user';
-import type { UserInfo } from "@/types/user";
-import type {AxiosResponse} from "axios";
+import { getUserList, getUser, addUser, deleteUser, updateUser } from '@/api/user';
+import type { User } from "@/types/user";
 
-const route = useRoute();
-const currentPage = useState('currentPage', () => Number(route.query.page) || 1);
-const pageSize = useState('pageSize', () => Number(route.query.size) || 20);
-
-
-const { data: userList } = await useAsyncData('users', async () => {
-  if (!import.meta.server) return; // 仅在服务端运行
-  const res = await getUserPageListAPI({ page: currentPage.value, size: pageSize.value });
-  return res.data.data;
+// 数据
+// 遮罩层
+const loading = ref(true);
+// 查询参数
+const queryParams = reactive({
+  pageNum: 1,
+  pageSize: 10,
 });
-
-onMounted(() => {
-  fetchUsersByPage(currentPage.value, pageSize.value);
+// 用户列表
+const userList = ref<User[]>([]);
+// 数据量
+const total = ref(0);
+// 用户
+const user = ref<User>();
+// 显示弹窗
+const dialogVisible = ref(false);
+// 弹窗标题
+const title = ref('');
+// 表单
+const form = reactive({
+  userId: '',
+  username: '',
+  account: '',
+  status: '',
 });
+// 表单引用
+const formRef = ref();
+// 校验规则
+const rules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { pattern: /^.{1,20}$/, message: '用户名不能超过20位字符长度', trigger: 'blur' }
+  ],
+  account: [
+    { required: true, message: '请输入账号', trigger: 'blur' },
+    { pattern: /^[a-zA-Z0-9]{1,20}$/, message: '账号必须是1-20位字符长度的大小写字母或数字', trigger: 'blur' }
+  ],
+  status: [{ required: true, message: '状态不能为空', trigger: 'change' }],
+};
+// 分页组件
+const paginationLayout = ref('total, prev, pager, next, jumper');
 
-// 监听屏幕大小变化（并注意防止hydration中出现mismatch）
-const paginationLayout = useState('paginationLayout', () => 'total, prev, pager, next, jumper');
-
+// 方法
+// 获取用户
+const fetchUser = async (userId: string) => {
+  loading.value = true;
+  const {data: res} = await getUser(userId);
+  user.value = res.data;
+  loading.value = false;
+}
+// 获取用户列表
+const fetchUserList = async () => {
+  loading.value = true;
+  const {data: res} = await getUserList(queryParams);
+  userList.value = res.data.data;
+  total.value = res.data.total;
+  loading.value = false;
+}
+// 分页切换
+const handlePageChange = (val: number) => {
+  queryParams.pageNum = val;
+  fetchUserList();
+};
+// 取消表单
+const cancelForm = () => {
+  ElMessage.info('取消操作');
+  dialogVisible.value = false;
+};
+// 重置表单
+const resetForm = () => {
+  form.username = '';
+  form.account = '';
+  form.status = '';
+  title.value = '';
+};
+// 提交表单
+const submitForm = () => {
+  formRef.value?.validate((valid: boolean) => {
+    if (valid) {
+      if (form.userId) {
+        updateUser(form);
+        dialogVisible.value = false;
+        fetchUserList();
+        ElMessage.success('修改成功');
+      } else {
+        addUser(form);
+        dialogVisible.value = false;
+        fetchUserList();
+        ElMessage.success('添加成功');
+      }
+    }
+  });
+};
+// 监听屏幕大小变化
 const updatePaginationLayout = () => {
-  if (import.meta.client) {
-    paginationLayout.value = window.innerWidth <= 768 ? 'prev, pager, next' : 'total, prev, pager, next, jumper';
+  if (window.innerWidth <= 768) {
+    paginationLayout.value = 'prev, pager, next'; // 小屏幕只显示上一页、页码和下一页
+  } else {
+    paginationLayout.value = 'total, prev, pager, next, jumper'; // 大屏幕显示完整分页
+  }
+};
+// 添加按钮操作
+const handleAdd = async () => {
+  resetForm();
+  title.value = '添加用户';
+  dialogVisible.value = true;
+};
+// 编辑按钮操作
+const handleUpdate = async (userId: string) => {
+  resetForm();
+  await fetchUser(userId);
+  form.userId = userId;
+  form.account = user.value!.account;
+  form.username = user.value!.username;
+  form.status = user.value!.status;
+  title.value = '编辑用户';
+  dialogVisible.value = true;
+};
+// 删除用户
+const handleDelete = async (userId: string) => {
+  try {
+    await ElMessageBox.confirm('此操作将永久删除用户, 是否继续?', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      cancelButtonClass: 'cancel-button',
+      type: 'warning',
+    });
+    await deleteUser(userId);
+    await fetchUserList();
+    ElMessage.success('删除成功');
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除失败：', error);
+      ElMessage.error('删除失败，请稍后重试');
+    } else {
+      ElMessage.info('取消操作');
+    }
   }
 };
 
 onMounted(() => {
+  fetchUserList();
   updatePaginationLayout();
   window.addEventListener('resize', updatePaginationLayout);
 });
@@ -43,246 +159,68 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updatePaginationLayout);
 });
-
-const loading = ref(false);
-const addUserDialogVisible = ref(false);
-const updateUserDialogVisible = ref(false);
-const userForm = ref<FormInstance | null>(null);
-let currentUser = reactive<UserInfo>({
-  id: 0,
-  role: -1,
-  token: '',
-  createTime: '',
-  username: '',
-  account: '',
-  status: false,
-})
-const form = reactive({
-  username: '',
-  account: '',
-  status: '',
-});
-
-// 校验规则
-const rules = {
-  username: [
-    { required: true, message: '用户名不能为空', trigger: 'blur' },
-    { pattern: /^[a-zA-Z0-9]{1,10}$/, message: "用户名必须是1-10个字符长度的数字或英文字母", trigger: "blur" },
-  ],
-  account: [
-    { required: true, message: '账户不能为空', trigger: 'blur' },
-    { pattern: /^[a-zA-Z0-9]{1,10}$/, message: "账户必须是1-10个字符长度的数字或英文字母", trigger: "blur" },
-  ],
-  status: [{ required: true, message: '状态不能为空', trigger: 'change' }],
-};
-
-// 获取用户分页数据
-const fetchUsersByPage = async (page: number, size: number) => {
-  loading.value = true;
-  try {
-    const res = await getUserPageListAPI({ page, size });
-    if (res.data.code === 0) {
-      userList.value = res.data.data;
-    } else {
-      ElMessage.error(res.data.message || '获取数据失败');
-    }
-  } catch (error) {
-    ElMessage.error('请求失败，请稍后重试');
-  } finally {
-    loading.value = false;
-  }
-};
-
-// 添加用户
-const addUser = async () => {
-  if (!userForm.value) {
-    return;
-  }
-  userForm.value.validate(async (valid: boolean) => {
-    if (!valid) {
-      ElMessage.error('表单校验失败，请检查输入内容');
-      return;
-    }
-    try {
-      const response = await addUserAPI(form);
-      if (response.data.code === 0) {
-        ElMessage.success('用户添加成功');
-        addUserDialogVisible.value = false;
-        resetForm();
-        await fetchUsersByPage(currentPage.value, pageSize.value);
-      } else {
-        ElMessage.error(response.data.message || '添加用户失败');
-      }
-    } catch (error) {
-      ElMessage.error('请求失败，请稍后重试');
-    }
-  });
-};
-
-// 编辑用户
-const updateUser = async () => {
-  if (!userForm.value || !currentUser) return;
-  userForm.value.validate(async (valid: boolean) => {
-    if (!valid) {
-      ElMessage.error('表单校验失败，请检查输入内容');
-      return;
-    }
-    try {
-      const response = await updateUserAPI(currentUser);
-      if (response.data.code === 0) {
-        ElMessage.success('update success');
-        updateUserDialogVisible.value = false;
-        await fetchUsersByPage(currentPage.value, pageSize.value);
-      } else {
-        ElMessage.error(response.data.message || 'update failed');
-      }
-    } catch (error) {
-      ElMessage.error('请求失败，请稍后重试');
-    }
-  });
-};
-
-// 删除用户
-const handleDeleteUser = async (id: number) => {
-  try {
-    await ElMessageBox.confirm('此操作将永久删除用户, 是否继续?', '提示', {
-      confirmButtonText: 'Confirm',
-      cancelButtonText: 'Cancel',
-      type: 'warning',
-    });
-    const res = await deleteUserAPI(id);
-    if (res?.data.code === 0) {
-      ElMessage.success('delete success');
-      await fetchUsersByPage(currentPage.value, pageSize.value);
-    } else {
-      ElMessage.error((res as AxiosResponse<{ message: string }>).data.message || 'delete failed');
-    }
-  } catch (error) {
-    ElMessage.error((error as { message: string }).message || '请求失败，请稍后重试');
-  }
-};
-
-// 重置表单
-const resetForm = () => {
-  form.username = '';
-  form.account = '';
-  form.status = '';
-  Object.assign(currentUser, {
-    id: 0,
-    role: 'user',
-    token: '',
-    createTime: '',
-    username: '',
-    account: '',
-    status: false,
-  });
-};
-
-// 取消表单
-const cancelForm = () => {
-  ElMessage.info('Operation Cancelled');
-  addUserDialogVisible.value = false;
-  updateUserDialogVisible.value = false;
-};
-
-// 打开编辑对话框
-const openEditDialog = (row: UserInfo) => {
-  Object.assign(currentUser, row); // 将选中行数据赋值到 currentUser
-  updateUserDialogVisible.value = true;
-};
-
-// 分页更新
-const handlePageChange = (page: number) => {
-  currentPage.value = page;
-  fetchUsersByPage(page, pageSize.value);
-};
-
-onMounted(() => {
-  fetchUsersByPage(currentPage.value, pageSize.value);
-});
-
 </script>
 
 
 <template>
   <div class="user-manage-container">
     <!-- 添加用户 -->
-    <el-button type="primary" @click="addUserDialogVisible = true">Add User</el-button>
-    <!-- 添加用户对话框 -->
+    <el-button type="primary" @click="handleAdd">添加用户</el-button>
+
+    <!-- 分页展示用户信息 -->
+    <el-table class="user-table" :data="userList" style="width: 100%; table-layout: fixed;">
+      <el-table-column label="序号" type="index" width="60" align="center"
+                       :index="(index: number) => (queryParams.pageNum - 1) * queryParams.pageSize + index + 1"/>
+      <el-table-column label="ID" prop="userId" min-width="80"  :show-overflow-tooltip="true" align="center"/>
+      <el-table-column label="用户名" prop="username" min-width="120"  align="center"/>
+      <el-table-column label="账号" prop="account" min-width="120"  align="center"/>
+      <el-table-column label="状态" prop="status" min-width="100"  align="center">
+        <template #default="{ row }">
+          <el-tag :type="row.status ? 'success' : 'danger'">{{ row.status ? '正常' : '停用' }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" min-width="160" align="center">
+        <template #default="{ row }">
+          <el-button type="primary" size="small" @click="handleUpdate(row.userId)" >编辑</el-button>
+          <el-button type="danger" size="small" @click="handleDelete(row.userId)" >删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-pagination
+      v-if="total > 0"
+      class="pagination"
+      :current-page="queryParams.pageNum"
+      :page-size="queryParams.pageSize"
+      :total="total"
+      :layout="paginationLayout"
+      @current-change="handlePageChange"
+    />
+
+    <!-- 添加与编辑用户对话框 -->
     <ClientOnly>
-      <el-dialog v-model="addUserDialogVisible" title="Add User" width="500">
-        <el-form :model="form" :rules="rules" ref="userForm" label-width="100px">
-          <el-form-item prop="username" label="Username" :label-width="80">
+      <el-dialog v-model="dialogVisible" :title="title" width="500">
+        <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+          <el-form-item prop="username" label="用户名" :label-width="80">
             <el-input v-model="form.username" autocomplete="off" />
           </el-form-item>
-          <el-form-item prop="account" label="Account" :label-width="80">
+          <el-form-item prop="account" label="账号" :label-width="80">
             <el-input v-model="form.account" autocomplete="off" />
           </el-form-item>
-          <el-form-item prop="status" label="Status" :label-width="80">
-            <el-select v-model="form.status" placeholder="Please select status">
-              <el-option label="Activate" :value="true"></el-option>
-              <el-option label="Inactivate" :value="false"></el-option>
+          <el-form-item prop="status" label="状态" :label-width="80">
+            <el-select v-model="form.status" placeholder="请选择状态">
+              <el-option label="正常" :value="true"></el-option>
+              <el-option label="停用" :value="false"></el-option>
             </el-select>
           </el-form-item>
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button @click="cancelForm" class="cancel-button">Cancel</el-button>
-            <el-button type="primary" @click="addUser">Confirm</el-button>
+            <el-button @click="cancelForm" type="info">取消</el-button>
+            <el-button @click="submitForm" type="primary">确定</el-button>
           </div>
         </template>
       </el-dialog>
     </ClientOnly>
-
-    <!-- 分页展示用户信息 -->
-    <el-table class="user-table" :data="userList?.data || []" style="width: 100%; table-layout: fixed;">
-      <el-table-column label="Id" prop="id" min-width="80"></el-table-column>
-      <el-table-column label="Username" prop="username" min-width="120"></el-table-column>
-      <el-table-column label="Account" prop="account" min-width="120"></el-table-column>
-      <el-table-column label="Status" prop="status" min-width="100">
-        <template #default="{ row }">
-          <el-tag :type="row.status ? 'success' : 'danger'">{{ row.status ? 'Active' : 'Inactive' }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="Manage" min-width="160">
-        <template #default="{ row }">
-          <el-button @click="openEditDialog(row)" type="primary" size="small">Edit</el-button>
-          <el-button @click="handleDeleteUser(row.id)" type="danger" size="small">Delete</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <!-- 编辑用户信息 -->
-    <el-dialog v-model="updateUserDialogVisible" title="Edit User Information" width="500px">
-      <el-form :model="currentUser" :rules="rules" ref="userForm" label-width="100px">
-        <el-form-item label="Username" prop="username">
-          <el-input v-model="currentUser.username" />
-        </el-form-item>
-        <el-form-item label="Account" prop="account">
-          <el-input v-model="currentUser.account" />
-        </el-form-item>
-        <el-form-item label="Status" prop="status">
-          <el-select v-model="currentUser.status">
-            <el-option label="Active" :value="true"></el-option>
-            <el-option label="Inactive" :value="false"></el-option>
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="cancelForm" class="cancel-button">Cancel</el-button>
-        <el-button type="primary" @click="updateUser">Confirm</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 分页组件 -->
-    <el-pagination
-      v-show="userList && userList.total > 0"
-      v-model:current-page="currentPage"
-      v-model:page-size="pageSize"
-      :total="userList?.total"
-      :layout="paginationLayout"
-      @current-change="handlePageChange"
-    />
   </div>
 </template>
 

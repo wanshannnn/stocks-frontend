@@ -1,10 +1,8 @@
 import { createPinia } from 'pinia';
-import 'assets/base.scss'
 import ElementPlus, {ID_INJECTION_KEY} from 'element-plus';
 import 'element-plus/dist/index.css';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import piniaPersist from 'pinia-plugin-persistedstate';
-import '@/utils/mock';
 
 export default defineNuxtPlugin((nuxtApp) => {
     nuxtApp.vueApp.provide(ID_INJECTION_KEY, {

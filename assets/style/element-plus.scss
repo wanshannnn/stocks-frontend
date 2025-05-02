@@ -1,0 +1,147 @@
+/* 主体样式 */
+body {
+  background-color: var(--color-background) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* 主按钮样式 */
+.el-button--primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-light) !important;
+}
+
+.el-button--primary:hover {
+  background-color: var(--color-hover) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-light) !important;
+}
+
+/* 取消按钮样式 */
+.cancel-button:hover {
+  color: var(--color-hover) !important;
+  border-color: var(--color-border) !important;
+  background-color: var(--color-background) !important;
+}
+
+/* Dropdown 下拉菜单样式 */
+.el-dropdown-menu__item {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.el-dropdown-menu__item:hover {
+  background-color: var(--color-hover-secondary) !important;
+  color: var(--color-text-light) !important;
+}
+
+/* 卡片样式 */
+.card,
+.el-card {
+  background-color: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* 搜索框样式 */
+.el-input__wrapper {
+  border: 1px solid var(--color-background) !important;
+}
+
+.el-input__wrapper:hover {
+  border: 1px solid var(--color-hover-light) !important;
+}
+
+.el-input__wrapper:focus-within {
+  border: 1px solid var(--color-border) !important;
+  box-shadow: none !important;
+}
+
+/* 分页组件样式 */
+.el-pager li, .btn-prev, .btn-next, .el-input__wrapper {
+  color: var(--color-text-primary) !important;
+  background-color: var(--color-surface) !important;
+}
+
+.el-pager li:hover, .btn-prev:hover, .btn-next:hover, .el-input__wrapper:hover {
+  color: var(--color-hover) !important;
+}
+
+.el-pager li.is-active {
+  color: var(--color-hover-light) !important;
+  font-weight: bold !important;
+}
+
+/* 表单样式 */
+.el-form__wrapper {
+  border: 1px solid var(--color-background) !important;
+}
+
+.el-form__wrapper:hover {
+  border: 1px solid var(--color-hover-light) !important;
+}
+
+.el-form__wrapper:focus-within {
+  border: 1px solid var(--color-border) !important;
+  box-shadow: none !important;
+}
+
+/* 选择组件样式 */
+.el-select {
+  color: var(--color-text-primary) !important;
+}
+
+.el-select__wrapper {
+  border: 1px solid var(--color-background) !important;
+}
+
+.el-select__wrapper:hover {
+  border: 1px solid var(--color-hover-light) !important;
+}
+
+.el-select__wrapper:focus-within {
+  border: 1px solid var(--color-border) !important;
+  box-shadow: none !important;
+}
+
+.el-select-dropdown {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.el-select-dropdown__item:hover {
+  background-color: var(--color-hover-secondary) !important;
+  color: var(--color-text-light) !important;
+}
+
+.el-select-dropdown__item.is-selected {
+  background-color: var(--color-hover-light) !important;
+  color: var(--color-text-secondary) !important;
+  font-weight: bold;
+}
+
+.el-tabs__item {
+  color: var(--color-text-primary) !important;
+}
+
+.el-tabs__item.is-active {
+  color: var(--color-primary) !important;
+}
+
+/* 表格样式 */
+.el-table__row {
+
+  background-color: var(--color-surface) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.el-table__header th {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.el-table__body tr:hover > td {
+  background-color: var(--color-hover) !important;
+}

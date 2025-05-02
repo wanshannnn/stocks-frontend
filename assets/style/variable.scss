@@ -1,0 +1,64 @@
+// 明亮模式
+$light-theme: (
+        color-primary: #8E7BAA,
+        color-primary-light: #BBAEDC,
+        color-primary-dark: #6D5C87,
+        color-secondary: #BDAE9C,
+        color-secondary-light: #E0D3C1,
+        color-secondary-dark: #9D8F7D,
+        color-gray-light: #F2F2F2,
+        color-gray: #C2C2C2,
+        color-gray-dark: #7A7A7A,
+        color-success: #A8C4A2,
+        color-warning: #E2B97F,
+        color-error: #D88989,
+        color-background: #F8F6F4,
+        color-surface: #FFFFFF,
+        color-border: #D6CFE2,
+        color-text-primary: #2C2C2C,
+        color-text-secondary: #6D5C87,
+        color-text-light: #FFFFFF,
+        color-hover: #9A87C0,
+        color-hover-secondary: #CBB8D9,
+        color-hover-light: #EDE6F2
+);
+
+// 暗黑模式
+$dark-theme: (
+        color-primary: #A998C4,
+        color-primary-light: #C8BBE0,
+        color-primary-dark: #7C6C9C,
+        color-secondary: #C1A998,
+        color-secondary-light: #DECFC2,
+        color-secondary-dark: #A18C7C,
+        color-gray-light: #4A4A4A,
+        color-gray: #727272,
+        color-gray-dark: #B4B4B4,
+        color-success: #B6D2B0,
+        color-warning: #F1D1A2,
+        color-error: #E2A3A3,
+        color-background: #23232B,
+        color-surface: #2F2F39,
+        color-border: #5A5A6C,
+        color-text-primary: #ECECEC,
+        color-text-secondary: #D2C6E0,
+        color-text-light: #F8F6F4,
+        color-hover: #B6A4D0,
+        color-hover-secondary: #D6C8E2,
+        color-hover-light: #6F6287
+);
+
+
+@mixin define-theme($theme-map) {
+  @each $key, $value in $theme-map {
+    --#{$key}: #{$value};
+  }
+}
+
+:root {
+  @include define-theme($light-theme);
+}
+
+.dark {
+  @include define-theme($dark-theme);
+}

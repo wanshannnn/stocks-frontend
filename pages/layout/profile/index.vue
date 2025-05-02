@@ -1,21 +1,15 @@
 <script setup lang="ts">
+import {useLoginStore} from "~/stores/useLoginStore.ts";
+
 definePageMeta({
   middleware: 'auth',
   requiresAuth: true,
-  roles: [0, 1],
+  roles: ['admin', 'user'],
 });
 
-import { ref } from 'vue';
-
+// 数据
 // 用户信息
-const user = ref({
-  name: "Alice",
-  bio: "Stock enthusiast. Investor. Love learning new trends.",
-  followerCount: 250,
-  followingCount: 180,
-  passageCount: 4,
-});
-
+const user = useLoginStore().loginUser;
 // 动态数据
 const activities = ref([
   { timestamp: "2025-01-15 10:00", message: "Collected a new stock: Apple Inc. (AAPL)" },
@@ -36,8 +30,8 @@ const activities = ref([
             <el-avatar class="user-avatar" size="large">U</el-avatar>
           </el-col>
           <el-col :span="16">
-            <p class="profile-title">{{ user.name }}</p>
-            <p class="profile-text">{{ user.bio }}</p>
+            <p class="profile-title">{{ user?.username }}</p>
+            <p class="profile-text">{{ user?.bio }}</p>
           </el-col>
         </el-row>
         <!-- Follower 和 Following -->
@@ -45,15 +39,15 @@ const activities = ref([
           <el-row justify="space-between" align="middle">
             <el-col :xs="12" :span="8" class="stat">
               <p class="profile-text">Follower</p>
-              <p>{{ user.followerCount }}</p>
+              <p>{{ user?.followerCount || 0 }}</p>
             </el-col>
             <el-col :xs="12" :span="8" class="stat">
               <p class="profile-text">Following</p>
-              <p>{{ user.followingCount }}</p>
+              <p>{{ user?.followingCount || 0 }}</p>
             </el-col>
             <el-col :xs="0" :span="8" class="stat">
               <p class="profile-text">Passage</p>
-              <p>{{ user.passageCount }}</p>
+              <p>{{ user?.passageCount || 0 }}</p>
             </el-col>
           </el-row>
         </el-card>

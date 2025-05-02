@@ -1,42 +1,74 @@
 <script setup lang="ts">
-import { index } from '~/store';
-import { ElMessage, ElMessageBox } from "element-plus";
-import {computed, onBeforeUnmount, onMounted, reactive, ref} from "vue";
-import { fixPwdAPI } from '~/api/user.ts';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { fixPwd } from '@/api/user.ts';
+import { useLoginStore } from '@/stores/useLoginStore.ts';
+import { useThemeStore } from '@/stores/useThemeStore.ts';
+import { storeToRefs } from 'pinia';
+import { navigateTo } from '#app';
 
-const isCollapse = ref(false); // 菜单栏默认展开
+// 数据
+// 亮/暗模式
+const { isDark } = storeToRefs(useThemeStore());
+// 用户名
+const username = computed(() => useLoginStore().loginUser?.username ?? '未登录');
+// 显示修改密码对话框
 const dialogFormVisible = ref(false);
+// 修改密码表单DOM
 const pwdRef = ref();
-const username = computed(() => loginUserStore.loginUser?.username ?? '未登录用户');
+// 修改密码表单
 const form = reactive({
   oldPwd: '',
   newPwd: '',
   rePwd: '',
 })
+// 侧边栏展开/折叠
+const isCollapse = ref(false);
+// 侧边栏路径
+const activeAside = computed(() => useRoute().path);
+// 侧边栏内容
 const menuList = [
   {
-    title: ' Dashboard',
+    title: ' 首页',
     path: '/layout/dashboard',
     icon: 'House',
   },
   {
-    title: 'MyStocks',
-    path: '/layout/mystocks',
+    title: '最新行情',
+    path: '/layout/market',
+    icon: 'TrendCharts',
+  },
+  {
+    title: '最新资讯',
+    path: '/layout/passage',
     icon: 'Document',
   },
   {
-    title: 'Management',
+    title: '走势分析',
+    path: '/layout/analysis',
+    icon: 'DataAnalysis',
+  },
+  {
+    title: '我的股票',
+    path: '/layout/mystocks',
+    icon: 'Ticket',
+  },
+  {
+    title: '用户管理',
     path: '/layout/management',
     icon: 'Management',
   },
   {
-    title: 'Profile',
+    title: '个人中心',
     path: '/layout/profile',
     icon: 'User',
   },
-]
+];
 
-// 修改密码的校验规则
+// 方法
+// 切换亮暗
+const toggle = () => useThemeStore().toggleTheme();
+// 校验两次输入密码是否相同
 const samePwd = (rules: any, value: any, callback: any) => {
   if (value !== form.newPwd) {
     callback(new Error('两次输入的密码不一致!'));
@@ -44,6 +76,7 @@ const samePwd = (rules: any, value: any, callback: any) => {
     callback();
   }
 }
+// 校验规则
 const rules = {
   oldPwd: [
     { required: true, message: '请输入原密码', trigger: 'blur' },
@@ -55,11 +88,18 @@ const rules = {
   ],
   rePwd: [
     { required: true, message: '请再次确认新密码', trigger: 'blur' },
-    { pattern: /^\S{6,15}$/, message: '新密码必须是6-15位字符长度的非空字符', trigger: 'blur' },
     { validator: samePwd, trigger: 'blur' }
   ]
 }
-
+// 监听
+const handleResize = () => {
+  const screenWidth = window.innerWidth;
+  if (screenWidth < 768) {
+    isCollapse.value = true;
+  } else {
+    isCollapse.value = false;
+  }
+};
 // 关闭修改密码对话框
 const cancelForm = () => {
   ElMessage({
@@ -68,9 +108,8 @@ const cancelForm = () => {
   })
   dialogFormVisible.value = false;
 }
-
 // 修改密码
-const fixPwd = async () => {
+const fixPassword = async () => {
   const valid = await pwdRef.value.validate();
   if (valid) {
     const submitForm = {
@@ -79,46 +118,23 @@ const fixPwd = async () => {
     }
     console.log('要提交的表单信息');
     console.log(submitForm);
-    const { data: res } = await fixPwdAPI(submitForm);
-    if (res.code != 0) return ElMessage({
+    const { data: res } = await fixPwd(submitForm);
+    console.log('res:', res);
+    if (res.code === 0) return ElMessage({
       type: 'success',
       message: '修改成功',
     })
     dialogFormVisible.value = false;
+    useLoginStore().clearLoginUser();
+    await navigateTo('/user/login');
   } else {
-    return false;
+    return ElMessage({
+      type: 'error',
+      message: '修改失败',
+    })
   }
 }
-
-// 侧边栏路径
-const route = useRoute();
-const getActiveAside = () => {
-  return route.path;
-};
-
-// 监听窗口大小变化
-const handleResize = () => {
-  const screenWidth = window.innerWidth;
-  if (screenWidth < 768) {
-    isCollapse.value = true; // 小屏幕下默认菜单栏收起
-  } else {
-    isCollapse.value = false; // 大屏幕下默认菜单栏展开
-  }
-};
-
-// 在组件挂载时设置初始状态，并监听窗口大小变化
-onMounted(() => {
-  handleResize();
-  window.addEventListener('resize', handleResize);
-});
-
-// 在组件卸载时移除事件监听器
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize);
-});
-
-// 退出登陆时出现确认弹窗
-const loginUserStore = index();
+// 登出
 const quitFn = () => {
   ElMessageBox.confirm(
     '请确认退出登录',
@@ -129,7 +145,7 @@ const quitFn = () => {
     }
   )
   .then(() => {
-    loginUserStore.clearLoginUser();
+    useLoginStore().clearLoginUser();
     ElMessage({
       type: 'success',
       message: '退出成功',
@@ -142,6 +158,16 @@ const quitFn = () => {
     })
   })
 }
+
+// 监听窗口大小变化
+onMounted(() => {
+  handleResize();
+  window.addEventListener('resize', handleResize);
+});
+// 移除事件监听器
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize);
+});
 </script>
 
 <template>
@@ -151,7 +177,7 @@ const quitFn = () => {
       <!-- isCollapse 用于判断侧边栏是否展开 -->
       <!-- getActiveAside 用于动态返回当前路由的路径，从而确定哪个菜单项应该被高亮显示 -->
       <!-- unique-opened router 用于点击侧边栏时进行路径跳转 -->
-      <el-menu :default-active="getActiveAside()"
+      <el-menu :default-active="activeAside"
                :width="isCollapse ? '60px' : '200px'" :collapse="isCollapse"
                unique-opened router>
         <template v-for="item in menuList" :key="item.path">
@@ -174,31 +200,44 @@ const quitFn = () => {
           <el-icon class="icon" v-else>
             <Fold @click.stop="isCollapse = !isCollapse" />
           </el-icon>
-          <!-- 用户登陆情况 -->
-          <el-dropdown style="float: right">
-            <el-button type="primary">
-              {{ username }}
-            </el-button>
-            <template #dropdown>
-              <el-dropdown-menu v-if="loginUserStore.loginUser">
-                <el-dropdown-item @click="dialogFormVisible = true">修改密码</el-dropdown-item>
-                <el-dropdown-item @click="quitFn">退出登陆</el-dropdown-item>
-              </el-dropdown-menu>
-              <el-dropdown-menu v-else>
-                <el-dropdown-item @click="navigateTo('/user/login')">去登陆</el-dropdown-item>
-                <el-dropdown-item @click="navigateTo('/user/register')">去注册</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+          <!-- 用户名组件 -->
+          <client-only>
+          <div class="header-container-item">
+            <el-dropdown>
+              <button class="pan-btn primary-btn"  style="width: 100px; height: 36px; display: flex; align-items: center; justify-content: center; margin: 5px">
+                {{ username }}
+              </button>
+              <template #dropdown>
+                <el-dropdown-menu v-if="useLoginStore().loginUser">
+                  <el-dropdown-item @click="dialogFormVisible = true">修改密码</el-dropdown-item>
+                  <el-dropdown-item @click="quitFn">退出登陆</el-dropdown-item>
+                </el-dropdown-menu>
+                <el-dropdown-menu v-else>
+                  <el-dropdown-item @click="navigateTo('/user/login')">去登陆</el-dropdown-item>
+                  <el-dropdown-item @click="navigateTo('/user/register')">去注册</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+          </client-only>
+          <!-- 亮暗切换 -->
+          <div class="header-container-item">
+            <button @click="toggle" class="pan-btn primary-btn"  style="width: 100px; height: 36px; display: flex; align-items: center; justify-content: center; margin: 5px">
+              <span v-if="isDark">🌙 暗色</span>
+              <span v-else>☀️ 亮色</span>
+            </button>
+          </div>
           <!-- Github -->
-          <a href="https://github.com/wanshannnn" style="float: right">
-            <img
-                src="../assets/icons/github.svg"
-                alt="Github"
-                style="width: 36px; height: 36px; transform: translate(0px, 12px);"
-                class="github-icon"
-            />
-          </a>
+          <div class="header-container-item">
+            <a href="https://github.com/wanshannnn" style="float: right; margin-top: -8px">
+              <img
+                  src="../assets/icons/github.svg"
+                  alt="Github"
+                  style="width: 36px; height: 36px; transform: translate(0px, 12px);"
+                  class="github-icon"
+              />
+            </a>
+          </div>
         </el-header>
 
         <!-- 主体部分 -->
@@ -208,7 +247,9 @@ const quitFn = () => {
       </el-container>
     </el-container>
 
+
     <!-- 修改密码对话框 -->
+    <client-only>
     <el-dialog v-model="dialogFormVisible" title="修改密码" width="500">
       <el-form :model="form" :rules="rules" ref="pwdRef">
         <el-form-item prop="oldPwd" label="原密码" width='80px'>
@@ -224,10 +265,11 @@ const quitFn = () => {
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="cancelForm" class="cancel-button">取消</el-button>
-          <el-button type="primary" @click="fixPwd">确定</el-button>
+          <el-button type="primary" @click="fixPassword">确定</el-button>
         </div>
       </template>
     </el-dialog>
+    </client-only>
   </div>
 </template>
 
@@ -240,27 +282,22 @@ const quitFn = () => {
 
 .el-header {
   background-color: var(--color-surface);
-  color: #333333;
   line-height: 60px;
-
-  .el-dropdown .el-button {
-    float: right;
-    width: 80px;
-    margin: 14px 20px;
-    background-color: #F7F7F7;
-    border-color: #D1D1D1;
-    color: #333333;
-  }
-
-  @media (max-width: 768px) {
-    .el-dropdown, .el-dropdown .el-button {
-      display: none;
-    }
-  }
 }
 
 @media (max-width: 768px) {
-  .github-icon {
+  .el-dropdown, .el-dropdown .el-button {
+    display: none;
+  }
+}
+
+.header-container-item {
+  float: right;
+  margin: 10px;
+}
+
+@media (max-width: 768px) {
+  .header-container-item {
     display: none;
   }
 }
@@ -274,6 +311,7 @@ const quitFn = () => {
 
 .el-menu-item {
   padding-right: 30px;
+  color: var(--color-text-primary);
   font-size: 12px;
   display: flex;
   justify-content: left;

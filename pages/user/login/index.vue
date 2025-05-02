@@ -1,24 +1,25 @@
 <script setup lang="ts">
 import { User, Lock } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import { ref, reactive } from 'vue';
-import { index } from '~/store';
-import { loginAPI } from '~/api/user.ts';
+import { useLoginStore } from '@/stores/useLoginStore.ts';
+import { userLogin } from '~/api/user.ts';
+import { navigateTo } from "#app";
 
 definePageMeta({
   layout: false,
 });
 
 let loginForm = reactive({
-  username: "",
+  account: "",
   password: "",
 });
+
 const loginRef = ref();
-const loginUserStore = index();
+
 const rules = {
-  username: [
-    { required: true, message: "请输入用户名", trigger: "blur" },
-    { pattern: /^[a-zA-Z0-9]{1,10}$/, message: "用户名必须是1-10个字符长度的数字或英文字母", trigger: "blur" },
+  account: [
+    { required: true, message: "请输入账号", trigger: "blur" },
+    { pattern: /^[a-zA-Z0-9]{1,20}$/, message: "账号必须是1-20个字符长度的数字或英文字母", trigger: "blur" },
   ],
   password: [
     { required: true, message: "请输入密码", trigger: "blur" },
@@ -30,12 +31,12 @@ const login = async () => {
   console.log('loginRef:', loginRef.value);
   const valid = await loginRef.value.validate();
   if (valid) {
-    const { data: res } = await loginAPI(loginForm);
+    const { data: res } = await userLogin(loginForm);
     console.log(res);
     if (res.code === 0 && res.data) {
+      useLoginStore().setLoginUser(res.data);
       ElMessage.success("登陆成功");
-      await loginUserStore.fetchLoginUser();
-      navigateTo({ path: '/' });
+      await navigateTo('/');
     }
   } else {
     ElMessage.error("登陆失败")
@@ -52,9 +53,9 @@ const login = async () => {
       <el-col :span="12" :xs="24">
         <!-- 登陆表单 -->
         <el-form class="login_form" :model="loginForm" :rules="rules" ref="loginRef">
-          <h1>Stocks 身份认证</h1>
-          <el-form-item prop="username">
-            <el-input placeholder="请输入用户名" :prefix-icon="User" v-model="loginForm.username"></el-input>
+          <h1>登陆</h1>
+          <el-form-item prop="account">
+            <el-input placeholder="请输入账号" :prefix-icon="User" v-model="loginForm.account"></el-input>
           </el-form-item>
           <el-form-item prop="password">
             <el-input type="password" placeholder="请输入密码" :prefix-icon="Lock" v-model="loginForm.password"></el-input>

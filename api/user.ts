@@ -1,121 +1,79 @@
 import request from '@/utils/request';
-import type {GetUserAPIResponse, GetUserListAPIResponse} from "@/types/user.ts";
 
-/**
- * 获取当前用户信息
- */
+// 获取当前用户信息
 export const getCurrentUser = () => {
-    return request<GetUserAPIResponse>({
-        url: '/user/current',
+    return request({
+        url: '/user/userInfo',
         method: "get"
     })
 }
 
-
-/**
- * 登录接口（这是JSDoc注释）
- * @param {*} params {username: 用户名, password: 密码}
- * @returns Promise对象
- */
-export const loginAPI = (params: any) => {
+// 登录
+export const userLogin = (query: any) => {
     return request({
         url: '/user/login',
         method: 'post',
-        data: { ...params }
+        data: query
     })
 }
 
-
-/**
- * 注册接口
- * @param params 注册的DTO对象
- * @returns
- */
-export const registerAPI = (params: any) => {
+// 注册
+export const userRegister = (query: any) => {
     return request({
         url: '/user/register',
         method: 'post',
-        data: { ...params }
+        data: query
     })
 }
 
-
-/**
- * 修改密码接口
- * @param params 新旧密码的DTO对象
- * @returns
- */
-export const fixPwdAPI = (params: any) => {
+// 修改密码
+export const fixPwd = (query: any) => {
     return request({
         url: '/user/fixpwd',
         method: 'put',
-        data: { ...params }
+        data: query
     })
 }
 
-
-/**
- * 管理员添加用户
- * @param params 添加用户的DTO对象
- * @returns
- */
-export const addUserAPI = (params: any) => {
+// 添加用户
+export const addUser = (query: any) => {
     return request({
-        url: '/user/add',
+        url: '/user',
         method: 'post',
-        data: { ...params }
+        data: query
     })
 }
 
-
-/**
- * 获取用户分页列表
- * @param params 分页查询DTO
- * @returns
- */
-export const getUserPageListAPI = (params: any) => {
-    return request<GetUserListAPIResponse>({
-        url: `/user/page?page=${params.page}&size=${params.size}`,
+// 分页查询用户列表
+export const getUserList = (query: any) => {
+    return request({
+        url: `/user/list`,
         method: 'get',
+        data: query
     });
 };
 
-
-/**
- * 根据id获取用户信息，用于回显
- * @param id
- * @returns
- */
-export const getUserByIdAPI = (id: number) => {
+// 查询用户
+export const getUser = (userId: string) => {
     return request({
-        url: `/user/${id}`,
+        url: `/user/` + userId,
         method: 'get'
     })
 }
 
-
-/**
- * 修改用户信息
- * @param params 更新用户信息的DTO对象
- * @returns
- */
-export const updateUserAPI = (params: any) => {
+// 修改用户
+export const updateUser= (query: any) => {
     return request({
-        url: '/user/update',
+        url: '/user',
         method: 'put',
-        data: { ...params }
+        data: query
     })
 }
 
-
-/**
- * 管理员根据id删除用户
- * @param id 用户id
- * @returns
- */
-export const deleteUserAPI = (id: number) => {
+// 删除用户
+export const deleteUser = (userId: string) => {
     return request({
-        url: `/user/delete/${id}`,
+        url: `/user/` + userId,
         method: 'delete'
     })
 }
