@@ -13,6 +13,10 @@ Mock.mock('/api/user/userInfo', 'get', (options: any) => {
             username: '张小花',
             account: 'zhangxiaohua',
             status: '1',
+            bio: '一个业余爱好者',
+            followerCount: 0,
+            followingCount: 0,
+            passageCount: 1,
         },
     }
 })
@@ -25,13 +29,17 @@ Mock.mock('/api/user/login', 'post', (options: any) => {
             code: 0,
             message: '登录成功',
             data: {
-                userId: Mock.Random.guid(),
+                userId: '7c85a8d4-bb50-4e13-a365-d6e9f3b4cc5b',
                 roles: 'admin',
-                token: Mock.Random.string('lower', 32),
-                createTime: Mock.Random.datetime('yyyy-MM-dd HH:mm:ss'),
+                token: 'abcdef123456',
+                createTime: '2025-01-01T12:00:00Z',
                 username: '张小花',
                 account: 'zhangxiaohua',
                 status: '1',
+                bio: '一个业余爱好者',
+                followerCount: 0,
+                followingCount: 0,
+                passageCount: 1,
             },
         };
     } else {
@@ -73,12 +81,16 @@ const userPageListMockAPI = Mock.mock({
     'data|200': [
         {
             userId: '@guid()',
-            username: '@name',
+            username: '@cname',
             account: '@integer(0, 1000)',
             roles: ['user'],
             token: '@guid()',
             status: '@integer(0, 1)',
             createTime: '@date("yyyy-MM-dd")',
+            bio: '@cparagraph(1, 2)',
+            followerCount: '@integer(0, 1000)',
+            followingCount: '@integer(0, 1000)',
+            passageCount: '@integer(0, 100)',
         }
     ]
 });
@@ -131,13 +143,17 @@ Mock.mock(/\/api\/user\/[\w-]+$/, 'get', (options: any) => {
         code: 0,
         message: '查询用户信息成功',
         data: {
-            userId: id,
+            userId: '7c85a8d4-bb50-4e13-a365-d6e9f3b4cc5b',
             roles: 'admin',
             token: 'abcdef123456',
             createTime: '2025-01-01T12:00:00Z',
             username: '张小花',
             account: 'zhangxiaohua',
             status: '1',
+            bio: '一个业余爱好者',
+            followerCount: 0,
+            followingCount: 0,
+            passageCount: 1,
         },
     }
 })

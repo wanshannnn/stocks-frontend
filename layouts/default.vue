@@ -139,8 +139,9 @@ const quitFn = () => {
   ElMessageBox.confirm(
     '请确认退出登录',
     {
-      confirmButtonText: 'OK',
-      cancelButtonText: 'Cancel',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      cancelButtonClass: 'cancel-button',
       type: 'warning',
     }
   )

@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import {useLoginStore} from "~/stores/useLoginStore.ts";
+import { getPassageList } from '~/api/passage.ts';
+import { navigateTo } from '#app';
+import type { Passage } from '@/types/passage.ts';
+import { debounce } from 'lodash';
 
 definePageMeta({
   middleware: 'auth',
@@ -8,56 +12,101 @@ definePageMeta({
 });
 
 // 数据
+// 遮罩层
+const loading = ref(true);
 // 用户信息
 const user = useLoginStore().loginUser;
 // 动态数据
 const activities = ref([
-  { timestamp: "2025-01-15 10:00", message: "Collected a new stock: Apple Inc. (AAPL)" },
-  { timestamp: "2025-01-14 14:30", message: "Yesterday's profit: +$200" },
-  { timestamp: "2025-01-13 09:20", message: "Shared stock analysis with 5 friends." },
-  { timestamp: "2025-01-12 16:45", message: "Joined a stock discussion group: Growth Stocks." },
+  { timestamp: "2025-01-15 10:00", message: "发表了文章《看19-24年财报》" },
+  { timestamp: "2025-01-14 14:30", message: "昨日收益: +200.00" },
+  { timestamp: "2025-01-13 09:20", message: "昨日收益：-100.00" },
+  { timestamp: "2025-01-12 16:45", message: "昨日收益：+30.00" },
 ]);
+// 有无文章未加载
+const noMore = ref(false);
+// 文章列表
+const passageList = ref<Passage[]>([]);
+// 查询文章列表参数
+const passageListQueryParams = reactive({
+  pageNum: 1,
+  pageSize: 10,
+});
+// 文章列表容器DOM
+const passageContainerRef = ref();
+
+// 方法
+// 格式化日期
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString();
+}
+// 查询文章列表
+const fetchPassageList = async () => {
+  loading.value = true;
+  const {data: res} = await getPassageList(passageListQueryParams);
+  passageList.value.push(...res.data.list);
+  console.log('passageListQueryParams:', passageListQueryParams, 'passageList:', passageList);
+  if (res.data.list.length < passageListQueryParams.pageSize) {
+    noMore.value = true;
+  }
+  passageListQueryParams.pageNum++;
+  loading.value = false;
+  console.log('noMore: ', noMore.value);
+}
+// 文章滚动加载
+const handleScroll = debounce(() => {
+  if (loading.value || noMore.value) return;
+  const scrollTop = document.documentElement.scrollTop;
+  const windowHeight = window.innerHeight;
+  const documentHeight = document.documentElement.scrollHeight;
+  if (scrollTop + windowHeight >= documentHeight - 10) {
+    fetchPassageList();
+  }
+}, 300)
+
+// 初始化
+onMounted(async () => {
+  await fetchPassageList();
+  window.addEventListener('scroll', handleScroll, { passive: true })
+});
+// 卸载监听器
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <template>
   <el-row class="profile-container">
     <!-- 左侧个人信息 -->
-    <el-col :xs="24" :sm="24" :md="10" class="personal-info">
-      <!-- 用户头像和简介 -->
-      <el-card shadow="never" class="user-info-card">
+    <el-col :xs="24" :span="6" class="personal-container">
+      <!-- 用户简介 -->
+      <el-card class="user-info-card">
         <el-row>
           <el-col :span="8">
-            <el-avatar class="user-avatar" size="large">U</el-avatar>
+            <el-avatar class="user-avatar" size="large" />
           </el-col>
           <el-col :span="16">
             <p class="profile-title">{{ user?.username }}</p>
             <p class="profile-text">{{ user?.bio }}</p>
           </el-col>
         </el-row>
-        <!-- Follower 和 Following -->
-        <el-card shadow="never" class="follow-info-card">
           <el-row justify="space-between" align="middle">
-            <el-col :xs="12" :span="8" class="stat">
-              <p class="profile-text">Follower</p>
+            <el-col :span="8" class="stat">
+              <p class="profile-text">关注</p>
               <p>{{ user?.followerCount || 0 }}</p>
             </el-col>
-            <el-col :xs="12" :span="8" class="stat">
-              <p class="profile-text">Following</p>
+            <el-col :span="8" class="stat">
+              <p class="profile-text">粉丝</p>
               <p>{{ user?.followingCount || 0 }}</p>
             </el-col>
-            <el-col :xs="0" :span="8" class="stat">
-              <p class="profile-text">Passage</p>
+            <el-col :span="8" class="stat">
+              <p class="profile-text">文章</p>
               <p>{{ user?.passageCount || 0 }}</p>
             </el-col>
           </el-row>
-        </el-card>
       </el-card>
-    </el-col>
-
-    <!-- 右侧个人动态 -->
-    <el-col :xs="24" :sm="24" :md="12" class="personal-news">
-      <el-card shadow="never" class="news-card">
-        <p class="profile-title">Personal Activity</p>
+      <div class="news-card" style="margin-top: 30px">
+        <p class="activity" style="font-weight: bold">动态</p>
         <el-timeline>
           <el-timeline-item
               v-for="(activity, index) in activities"
@@ -67,23 +116,25 @@ const activities = ref([
             <p class="profile-text">{{ activity.message }}</p>
           </el-timeline-item>
         </el-timeline>
-      </el-card>
+      </div>
+    </el-col>
+
+    <!-- 右侧个人动态 -->
+    <el-col :xs="24" :span="18" class="passage-container">
+      <div class="passage-container" @scroll.passive="handleScroll" ref="passageContainerRef">
+        <div v-for="passage in passageList" :key="passage.passageId" class="passage-card" @click="navigateTo(`/layout/passage/${passage.passageId}`)">
+          <div class="date">{{ formatDate(passage.createdAt) }}</div>
+          <h2 class="title">{{ passage.title }}</h2>
+          <p class="preview">{{ passage.preview }}</p>
+        </div>
+        <div v-if="loading" class="loading">加载中...</div>
+        <div v-if="noMore" class="no-more">没有更多了</div>
+      </div>
     </el-col>
   </el-row>
 </template>
 
 <style lang="scss" scoped>
-.profile-container {
-  margin: 20px;
-  display: flex;
-  gap: 20px;
-}
-@media(max-width: 768px) {
-  .profile-container {
-    margin: 5px;
-  }
-}
-
 .personal-info {
   display: flex;
   flex-direction: column;
@@ -95,32 +146,8 @@ const activities = ref([
   flex-direction: column;
 }
 
-
 .user-info-card {
   padding: 20px;
-}
-@media(max-width: 768px) {
-  .user-info-card {
-    padding: 5px;
-  }
-}
-
-.news-card {
-  padding: 20px;
-  height: 100%;
-}
-@media(max-width: 768px) {
-  .news-card {
-    padding: 5px;
-  }
-}
-
-.user-avatar {
-  margin: 10px;
-}
-
-.stat {
-  text-align: center;
 }
 
 .profile-title {
@@ -129,5 +156,49 @@ const activities = ref([
   font-size: 20px;
   font-weight: bold;
   color: var(--color-text-primary);
+}
+
+.personal-container, .passage-container {
+  padding: 20px;
+}
+
+.passage-card {
+  background-color: var(--color-background);
+  border: 1px, solid, var(--color-gray-light);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px;
+  cursor: pointer;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.passage-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.date {
+  font-size: 0.8em;
+  color: var(--color-gray-dark);
+}
+
+.title {
+  margin: 12px 0 8px;
+  font-size: 1.3em;
+  font-weight: bold;
+  color: var(--color-text-primary);
+}
+
+.preview {
+  font-size: 1em;
+  color: var(--color-gray-dark);
+  line-height: 1.6;
+}
+
+.loading,
+.no-more {
+  text-align: center;
+  color: var(--color-gray-dark);
+  padding: 12px 0;
 }
 </style>

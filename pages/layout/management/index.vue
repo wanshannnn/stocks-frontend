@@ -130,24 +130,23 @@ const handleUpdate = async (userId: string) => {
 };
 // 删除用户
 const handleDelete = async (userId: string) => {
-  try {
-    await ElMessageBox.confirm('此操作将永久删除用户, 是否继续?', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      cancelButtonClass: 'cancel-button',
-      type: 'warning',
-    });
+  ElMessageBox.confirm('此操作将永久删除用户, 是否继续?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    cancelButtonClass: 'cancel-button',
+    type: 'warning',
+  })
+  .then(async () => {
     await deleteUser(userId);
     await fetchUserList();
     ElMessage.success('删除成功');
-  } catch (error) {
-    if (error !== 'cancel') {
-      console.error('删除失败：', error);
-      ElMessage.error('删除失败，请稍后重试');
-    } else {
-      ElMessage.info('取消操作');
-    }
-  }
+  })
+  .catch(() => {
+    ElMessage({
+      type: 'info',
+      message: '取消操作',
+    })
+  })
 };
 
 onMounted(() => {
