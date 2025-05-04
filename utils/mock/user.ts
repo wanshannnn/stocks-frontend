@@ -10,13 +10,15 @@ Mock.mock('/api/user/userInfo', 'get', (options: any) => {
             roles: 'admin',
             token: 'abcdef123456',
             createTime: '2025-01-01T12:00:00Z',
-            username: '张小花',
-            account: 'zhangxiaohua',
+            username: 'admin',
+            account: 'admin',
             status: '1',
             bio: '一个业余爱好者',
             followerCount: 0,
             followingCount: 0,
             passageCount: 1,
+            collection: ['000001', '000002', '000003'],
+            possession: ['000001', '000002', '000003', '000004', '000005'],
         },
     }
 })
@@ -24,7 +26,7 @@ Mock.mock('/api/user/userInfo', 'get', (options: any) => {
 // 模拟登录接口
 Mock.mock('/api/user/login', 'post', (options: any) => {
     const { account, password } = JSON.parse(options.body);
-    if (account === 'zhangxiaohua' && password === '123456') {
+    if (account === 'admin' && password === '123456') {
         return {
             code: 0,
             message: '登录成功',
@@ -33,13 +35,15 @@ Mock.mock('/api/user/login', 'post', (options: any) => {
                 roles: 'admin',
                 token: 'abcdef123456',
                 createTime: '2025-01-01T12:00:00Z',
-                username: '张小花',
-                account: 'zhangxiaohua',
+                username: 'admin',
+                account: 'admin',
                 status: '1',
                 bio: '一个业余爱好者',
                 followerCount: 0,
                 followingCount: 0,
                 passageCount: 1,
+                collection: ['000001', '000002', '000003'],
+                possession: ['000001', '000002', '000003', '000004', '000005'],
             },
         };
     } else {
@@ -91,6 +95,8 @@ const userPageListMockAPI = Mock.mock({
             followerCount: '@integer(0, 1000)',
             followingCount: '@integer(0, 1000)',
             passageCount: '@integer(0, 100)',
+            collection: ['000001', '000002', '000003'],
+            possession: ['000001', '000002', '000003', '000004', '000005']
         }
     ]
 });
@@ -154,6 +160,8 @@ Mock.mock(/\/api\/user\/[\w-]+$/, 'get', (options: any) => {
             followerCount: 0,
             followingCount: 0,
             passageCount: 1,
+            collection: ['000001', '000002', '000003'],
+            possession: ['000001', '000002', '000003', '000004', '000005'],
         },
     }
 })

@@ -30,6 +30,7 @@ Mock.mock(/\/api\/passage\/list$/, 'get', (options: any) => {
     const list = Mock.mock({
         [`list|${pageSize}`]: [
             {
+                userId: '@guid()',
                 passageId: '@string("number", 3)',
                 title: '@ctitle(10, 20)',
                 preview: '@cparagraph(2, 5)',

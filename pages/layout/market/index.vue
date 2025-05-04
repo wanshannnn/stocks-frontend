@@ -82,11 +82,14 @@ onBeforeUnmount(() => {
       <el-input
           v-model="queryParams.stockName"
           placeholder="请输入股票名称"
-          suffix-icon="el-icon-search"
           clearable
           @input="handleSearch"
           class="search-input"
-      />
+      >
+        <template #prefix>
+          <el-icon class="el-input__icon"><search /></el-icon>
+        </template>
+      </el-input>
     </el-col>
   </el-row>
 

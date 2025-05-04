@@ -140,7 +140,7 @@ const fetchUSHotStocks = async () => {
 // 初始化
 onMounted(async () => {
   username.value = useLoginStore().loginUser?.username ?? '未登录';
-  today.value = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
+  today.value = new Intl.DateTimeFormat('ch-SH', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
   await fetchIndexes();
   await fetchPassageList();
   await fetchGlobalHotStocks();
@@ -154,7 +154,7 @@ onUnmounted(() => {
 
 <template>
   <p class="welcome">Welcome, {{ username }}</p>
-  <p class="current-date">Today：{{ today }}</p>
+  <p class="current-date">今日：{{ today }}</p>
 
   <div class="dashboard-container">
     <el-row>
@@ -221,7 +221,7 @@ onUnmounted(() => {
         <div class="hot-stock-list">
           <div v-for="(stock, index) in hotStockList" :key="stock.code" class="hot-stock-item">
             <span class="stock-index">{{ index + 1 }}.</span>
-            <span class="stock-name" @click="navigateTo(`/layout/stock/${stock.code}`)">{{ stock.name }}</span>
+            <span class="stock-name" @click="navigateTo(`/layout/market/${stock.code}`)">{{ stock.name }}</span>
             <span class="stock-change" :class="getChangeClass(stock.change)">{{ stock.change }}</span>
           </div>
         </div>

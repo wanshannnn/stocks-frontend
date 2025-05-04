@@ -1,4 +1,5 @@
 export interface Passage {
+    userId: string;
     passageId: string;
     authorAvatar: string;
     authorName: string;

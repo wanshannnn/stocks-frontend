@@ -170,7 +170,6 @@ onBeforeUnmount(() => {
     <el-table class="user-table" :data="userList" style="width: 100%; table-layout: fixed;">
       <el-table-column label="序号" type="index" width="60" align="center"
                        :index="(index: number) => (queryParams.pageNum - 1) * queryParams.pageSize + index + 1"/>
-      <el-table-column label="ID" prop="userId" min-width="80"  :show-overflow-tooltip="true" align="center"/>
       <el-table-column label="用户名" prop="username" min-width="120"  align="center"/>
       <el-table-column label="账号" prop="account" min-width="120"  align="center"/>
       <el-table-column label="状态" prop="status" min-width="100"  align="center">
@@ -199,6 +198,9 @@ onBeforeUnmount(() => {
     <ClientOnly>
       <el-dialog v-model="dialogVisible" :title="title" width="500">
         <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+          <el-form-item prop="userId" label="ID" :label-width="80">
+            <el-input v-model="form.userId" autocomplete="off" disabled />
+          </el-form-item>
           <el-form-item prop="username" label="用户名" :label-width="80">
             <el-input v-model="form.username" autocomplete="off" />
           </el-form-item>

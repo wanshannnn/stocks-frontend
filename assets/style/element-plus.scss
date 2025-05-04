@@ -25,6 +25,11 @@ body {
 }
 
 /* Dropdown 下拉菜单样式 */
+.el-dropdown-menu {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-surface) !important;
+}
+
 .el-dropdown-menu__item {
   background-color: var(--color-surface);
   color: var(--color-text-primary);
@@ -91,10 +96,12 @@ body {
 /* 选择组件样式 */
 .el-select {
   color: var(--color-text-primary) !important;
+  background-color: var(--color-surface) !important;
 }
 
 .el-select__wrapper {
-  border: 1px solid var(--color-background) !important;
+  border: 1px solid var(--color-border) !important;
+  background-color: var(--color-surface) !important;
 }
 
 .el-select__wrapper:hover {
@@ -144,4 +151,13 @@ body {
 
 .el-table__body tr:hover > td {
   background-color: var(--color-hover) !important;
+}
+
+/* 弹窗 */
+.el-dialog {
+  background-color: var(--color-surface) !important;
+}
+
+.el-dialog__title {
+  color: var(--color-text-primary) !important;
 }

@@ -110,11 +110,15 @@ onMounted(() => {
 
 <template>
   <el-row>
-    <el-col :span="4">
+    <el-col :span="2">
       <p>历史趋势</p>
     </el-col>
     <el-col :span="8">
-      <el-input v-model="stockCode" placeholder="请输入股票代码" clearable />
+      <el-input v-model="stockCode" placeholder="请输入股票代码" clearable >
+        <template #prefix>
+          <el-icon class="el-input__icon"><search /></el-icon>
+        </template>
+      </el-input>
     </el-col>
   </el-row>
   <div class="chart-container" ref="chartContainer" style="height: 400px; margin-top: 20px;" />
@@ -123,7 +127,6 @@ onMounted(() => {
 <style scoped>
 p {
   margin: 5px;
-  font-family: 'Georgia', serif;
   font-size: min(2vw, 20px);
   font-weight: bold;
 }

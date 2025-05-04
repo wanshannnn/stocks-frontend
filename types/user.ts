@@ -10,4 +10,6 @@ export interface User {
     followerCount: number;
     followingCount: number;
     passageCount: number;
+    collection: [];
+    possession: [];
 }

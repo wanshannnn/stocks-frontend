@@ -1,11 +1,10 @@
 import request from '@/utils/request';
 
 // 查询股票（最新详情数据）
-export const getStock = async (query: any) => {
+export const getStock = async (stockCode: string) => {
     return request({
-        url: `/stock/`,
+        url: `/stock/` + stockCode,
         method: 'get',
-        data: query,
     });
 };
 
