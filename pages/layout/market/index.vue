@@ -96,7 +96,8 @@ onBeforeUnmount(() => {
   <el-row>
     <el-col :span="24">
       <el-card class="latest-stock-card" :loading="loading" shadow="never">
-        <el-table :data="stockList" style="width: 100%">
+        <el-skeleton :rows="5" animated v-if="loading" style="padding: 20px;" />
+        <el-table :data="stockList" style="width: 100%" v-else>
           <el-table-column label="序号" type="index" width="60"
                            :index="(index: number) => (queryParams.pageNum - 1) * queryParams.pageSize + index + 1"/>
           <el-table-column label="名称" prop="name" />

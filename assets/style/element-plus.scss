@@ -65,6 +65,12 @@ body {
 }
 
 /* 分页组件样式 */
+.el-pagination {
+  margin-top: 20px !important;
+  text-align: center !important;
+  justify-content: center !important;
+}
+
 .el-pager li, .btn-prev, .btn-next, .el-input__wrapper {
   color: var(--color-text-primary) !important;
   background-color: var(--color-surface) !important;

@@ -162,12 +162,13 @@ onBeforeUnmount(() => {
 
 
 <template>
-  <div class="user-manage-container">
+  <el-card>
     <!-- 添加用户 -->
     <el-button type="primary" @click="handleAdd">添加用户</el-button>
 
     <!-- 分页展示用户信息 -->
-    <el-table class="user-table" :data="userList" style="width: 100%; table-layout: fixed;">
+    <el-skeleton :rows="5" animated v-if="loading" style="padding: 20px;" />
+    <el-table class="user-table" :data="userList" v-else style="width: 100%; table-layout: fixed;">
       <el-table-column label="序号" type="index" width="60" align="center"
                        :index="(index: number) => (queryParams.pageNum - 1) * queryParams.pageSize + index + 1"/>
       <el-table-column label="用户名" prop="username" min-width="120"  align="center"/>
@@ -222,26 +223,5 @@ onBeforeUnmount(() => {
         </template>
       </el-dialog>
     </ClientOnly>
-  </div>
+  </el-card>
 </template>
-
-<style lang="scss" scoped>
-.user-manage-container {
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  box-sizing: border-box;
-  padding: 20px;
-  margin: 20px;
-}
-
-.user-table {
-  margin-top: 20px;
-  width: 100%;
-}
-
-.el-pagination {
-  margin-top: 20px;
-  text-align: center;
-  justify-content: center;
-}
-</style>

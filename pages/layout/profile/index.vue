@@ -81,15 +81,22 @@ onUnmounted(() => {
     <el-col :xs="24" :span="6" class="personal-container">
       <!-- 用户简介 -->
       <el-card class="user-info-card">
-        <el-row>
-          <el-col :span="8">
-            <el-avatar class="user-avatar" size="large" />
-          </el-col>
-          <el-col :span="16">
-            <p class="profile-title">{{ user?.username }}</p>
-            <p class="profile-text">{{ user?.bio }}</p>
-          </el-col>
-        </el-row>
+        <el-skeleton v-if="loading" style="--el-skeleton-circle-size: 60px">
+          <template #template>
+            <el-skeleton-item variant="circle" />
+            <el-skeleton :rows="1" animated style="padding: 20px;" />
+          </template>
+        </el-skeleton>
+        <div v-else>
+          <el-row>
+            <el-col :span="8">
+              <el-avatar class="user-avatar" size="large" />
+            </el-col>
+            <el-col :span="16">
+              <p class="profile-title">{{ user?.username }}</p>
+              <p class="profile-text">{{ user?.bio }}</p>
+            </el-col>
+          </el-row>
           <el-row justify="space-between" align="middle">
             <el-col :span="8" class="stat">
               <p class="profile-text">关注</p>
@@ -104,10 +111,12 @@ onUnmounted(() => {
               <p>{{ user?.passageCount || 0 }}</p>
             </el-col>
           </el-row>
+        </div>
       </el-card>
       <div class="news-card" style="margin-top: 30px">
         <p class="activity" style="font-weight: bold">动态</p>
-        <el-timeline>
+        <el-skeleton :rows="5" animated v-if="loading" style="padding: 20px;" />
+        <el-timeline v-else>
           <el-timeline-item
               v-for="(activity, index) in activities"
               :key="index"
@@ -121,13 +130,13 @@ onUnmounted(() => {
 
     <!-- 右侧个人动态 -->
     <el-col :xs="24" :span="18" class="passage-container">
-      <div class="passage-container" @scroll.passive="handleScroll" ref="passageContainerRef">
+      <el-skeleton :rows="5" animated v-if="loading" style="padding: 20px;" />
+      <div class="passage-container" @scroll.passive="handleScroll" ref="passageContainerRef" v-else>
         <div v-for="passage in passageList" :key="passage.passageId" class="passage-card" @click="navigateTo(`/layout/passage/${passage.passageId}`)">
           <div class="date">{{ formatDate(passage.createdAt) }}</div>
           <h2 class="title">{{ passage.title }}</h2>
           <p class="preview">{{ passage.preview }}</p>
         </div>
-        <div v-if="loading" class="loading">加载中...</div>
         <div v-if="noMore" class="no-more">没有更多了</div>
       </div>
     </el-col>

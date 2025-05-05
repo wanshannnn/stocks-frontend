@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Stock } from '@/types/stock.ts'
+import type { Stock } from '@/types/stock.ts';
 import { getStock } from '~/api/stock.ts';
 
 // 数据
@@ -32,46 +32,48 @@ onMounted(async () => {
 
 <template>
   <div class="stock-container">
-    <el-row class="stock-detail" v-if="stock">
-      <el-col :span="4">
-        <p>{{ stock.name }} <span class="code">({{ stock.code }})</span></p>
-      </el-col>
-    </el-row>
-
-    <el-row>
-      <el-col :span="4" :xs="24" class="info" v-if="stock">
-        <el-card>
-          <div class="info-item">
-            <span class="label">当前价格：</span>
-            <span class="value">{{ Number(stock.price).toFixed(2) }} 元</span>
-          </div>
-          <div class="info-item">
-            <span class="label">涨跌幅：</span>
-            <span :class="getChangeClass(stock.exchange)">{{ stock.exchange }}%</span>
-          </div>
-          <div class="info-item">
-            <span class="label">成交量：</span>
-            <span class="value">{{ stock.volume }} 手</span>
-          </div>
-          <div class="info-item">
-            <span class="label">成交额：</span>
-            <span class="value">{{ stock.turnover }} 万元</span>
-          </div>
-          <div class="info-item">
-            <span class="label">振幅：</span>
-            <span class="value">{{ stock.amplitude }}%</span>
-          </div>
-          <div class="info-item">
-            <span class="label">最高价：</span>
-            <span class="value">{{ Number(stock.highest) / 100 }}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">最低价：</span>
-            <span class="value">{{ Number(stock.lowest) / 100 }}</span>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <el-skeleton :rows="5" animated v-if="loading" style="padding: 20px;" />
+    <div v-else>
+      <el-row class="stock-detail" v-if="stock">
+        <el-col :span="4">
+          <p>{{ stock.name }} <span class="code">({{ stock.code }})</span></p>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="4" :xs="24" class="info" v-if="stock">
+          <el-card>
+            <div class="info-item">
+              <span class="label">当前价格：</span>
+              <span class="value">{{ Number(stock.price).toFixed(2) }} 元</span>
+            </div>
+            <div class="info-item">
+              <span class="label">涨跌幅：</span>
+              <span :class="getChangeClass(stock.exchange)">{{ stock.exchange }}%</span>
+            </div>
+            <div class="info-item">
+              <span class="label">成交量：</span>
+              <span class="value">{{ stock.volume }} 手</span>
+            </div>
+            <div class="info-item">
+              <span class="label">成交额：</span>
+              <span class="value">{{ stock.turnover }} 万元</span>
+            </div>
+            <div class="info-item">
+              <span class="label">振幅：</span>
+              <span class="value">{{ stock.amplitude }}%</span>
+            </div>
+            <div class="info-item">
+              <span class="label">最高价：</span>
+              <span class="value">{{ Number(stock.highest) / 100 }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">最低价：</span>
+              <span class="value">{{ Number(stock.lowest) / 100 }}</span>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+    </div>
   </div>
 </template>
 

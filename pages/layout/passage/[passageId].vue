@@ -32,7 +32,9 @@ onMounted(async () => {
 <template>
   <!-- 文章列表 -->
   <div class="passage-container">
-    <h2 class="title">{{ passage?.title }}</h2>
+    <el-skeleton :rows="5" animated v-if="loading" style="padding: 20px;" />
+    <div v-else>
+      <h2 class="title">{{ passage?.title }}</h2>
       <div class="header">
         <img :src="passage?.authorAvatar" alt="头像" class="avatar" />
         <div class="info">
@@ -40,8 +42,8 @@ onMounted(async () => {
           <div class="date">{{ formatDate(passage?.createdAt) }}</div>
         </div>
       </div>
-
       <p class="content">{{ passage?.content }}</p>
+    </div>
     </div>
 </template>
 

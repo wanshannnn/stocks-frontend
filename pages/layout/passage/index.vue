@@ -85,7 +85,8 @@ onUnmounted(() => {
           <el-tab-pane label="讨论" name="article"></el-tab-pane>
           <el-tab-pane label="资讯" name="news"></el-tab-pane>
         </el-tabs>
-        <div class="passage-container" @scroll.passive="handleScroll" ref="passageContainerRef">
+        <el-skeleton :rows="5" animated v-if="loading" style="padding: 20px;" />
+        <div class="passage-container" @scroll.passive="handleScroll" ref="passageContainerRef" v-else>
           <div v-for="passage in passageList" :key="passage.passageId" class="passage-card" @click="navigateTo(`/layout/passage/${passage.passageId}`)">
             <div class="header">
               <img :src="passage.authorAvatar" alt="头像" class="avatar" />
@@ -97,7 +98,6 @@ onUnmounted(() => {
             <h2 class="title">{{ passage.title }}</h2>
             <p class="preview">{{ passage.preview }}</p>
           </div>
-          <div v-if="loading" class="loading">加载中...</div>
           <div v-if="noMore" class="no-more">没有更多了</div>
         </div>
       </el-col>
@@ -108,7 +108,8 @@ onUnmounted(() => {
           <span style="font-size: 1.5em; font-weight: bold">热门文章</span>
         </div>
         <hr class="divider" />
-        <div class="hot-passage-list">
+        <el-skeleton :rows="5" animated v-if="loading" style="padding: 20px;" />
+        <div class="hot-passage-list" v-else>
           <div v-for="(passage, index) in passageList" :key="passage.passageId" class="hot-passage-item">
             <span class="passage-index">{{ index + 1 }}.</span>
             <span class="passage-title"
@@ -123,6 +124,10 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
+.left-container {
+  padding: 20px;
+}
+
 .passage-card {
   background-color: var(--color-background);
   border: 1px, solid, var(--color-gray-light);

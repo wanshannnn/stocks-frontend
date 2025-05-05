@@ -175,11 +175,13 @@ onUnmounted(() => {
         </el-row>
 
         <!-- 文章列表 -->
-        <div class="passage-container" @scroll.passive="handleScroll" ref="passageContainerRef">
+        <el-skeleton :rows="5" animated v-if="loading" style="padding: 20px;" />
+        <div class="passage-container" @scroll.passive="handleScroll" ref="passageContainerRef" v-else>
           <div class="passage-container-header">
             <span class="look-more" @click="navigateTo('/layout/passage')">查看更多话题</span>
             <hr class="divider" />
           </div>
+
           <div v-for="passage in passageList" :key="passage.passageId" class="passage-card" @click="navigateTo(`/layout/passage/${passage.passageId}`)">
             <div class="header">
               <img :src="passage.authorAvatar" alt="头像" class="avatar" />
@@ -191,7 +193,6 @@ onUnmounted(() => {
             <h2 class="title">{{ passage.title }}</h2>
             <p class="preview">{{ passage.preview }}</p>
           </div>
-          <div v-if="loading" class="loading">加载中...</div>
           <div v-if="noMore" class="no-more">没有更多了</div>
         </div>
       </el-col>
@@ -224,6 +225,7 @@ onUnmounted(() => {
             <span class="stock-name" @click="navigateTo(`/layout/market/${stock.code}`)">{{ stock.name }}</span>
             <span class="stock-change" :class="getChangeClass(stock.change)">{{ stock.change }}</span>
           </div>
+          <el-skeleton :rows="5" animated v-if="loading" style="padding: 20px;" />
         </div>
       </el-col>
     </el-row>
